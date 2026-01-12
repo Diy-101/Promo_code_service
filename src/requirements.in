@@ -1,0 +1,13 @@
+fastapi[standard]
+fastapi-pagination
+pydantic
+pydantic-settings
+pydantic_extra_types
+pycountry
+pyjwt
+asyncpg
+sqlalchemy
+email-validator
+redis
+bcrypt
+greenlet

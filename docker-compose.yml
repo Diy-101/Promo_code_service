@@ -1,0 +1,42 @@
+services:
+  postgres:
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_USER: dandy
+      POSTGRES_PASSWORD: secret
+      POSTGRES_DB: promocodes
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dandy -d promocodes"]
+      interval: 1s
+      timeout: 5s
+      retries: 5
+    ports:
+      - 5432:5432
+  redis:
+    image: redis
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli PING"]
+      interval: 1s
+      timeout: 5s
+      retries: 5
+    ports:
+      - 6379:6379
+  antifraud:
+    image: lodthe/prod-backend-antifraud:latest
+    environment:
+      SERVER_PORT: 9090
+      CACHE_DURATION_MS: 5000
+  backend:
+    build:
+      context: ./src
+      dockerfile: Dockerfile
+    env_file: "./src/.env"
+    ports:
+      - 8080:8080
+    depends_on:
+      postgres:
+        condition: service_healthy
+      antifraud:
+        condition: service_started
