@@ -455,3 +455,30 @@ class UserService:
                 avatar_url=result_orm.user.avatar_url,
             ),
         )
+
+    async def delete_comment(
+        self,
+        user_id: str,
+        comment_id: str,
+        promo_id: str,
+        session: AsyncSession,
+    ):
+        query = (
+            select(CommentORM)
+            .options(selectinload(CommentORM.promo))
+            .join(PromocodeORM, CommentORM.promo_id == PromocodeORM.id)
+            .where(CommentORM.id == comment_id, PromocodeORM.id == promo_id)
+        )
+
+        result_orm = (await session.execute(query)).scalar_one_or_none()
+        if result_orm is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail={
+                    "status": "error",
+                    "message": "Такого промокода или комментария не существует.",
+                },
+            )
+
+        await session.delete(result_orm)
+        await session.commit()
