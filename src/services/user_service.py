@@ -480,5 +480,14 @@ class UserService:
                 },
             )
 
+        if result_orm.author != user_id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail={
+                    "status": "error",
+                    "message": "Комментарий не принадлежит пользователю.",
+                },
+            )
+
         await session.delete(result_orm)
         await session.commit()
