@@ -256,3 +256,30 @@ async def put_comment(
                 "message": "Пользователь не авторизован.",
             },
         )
+
+
+@user_router.delete("/promo/{id}/comments/{comment_id}")
+async def delete_comment(
+    id: str = Path(...),
+    comment_id: str = Path(...),
+    credentials: HTTPAuthorizationCredentials = Depends(
+        AccessTokenUserBearer(auto_error=True)
+    ),
+    db: AsyncSession = Depends(get_db),
+):
+    user_id = user_service.get_user_uuid_from_token(credentials.credentials)
+    if await user_service.is_exist_in_db(user_id, db=db):
+        return await user_service.delete_comment(
+            user_id=user_id,
+            comment_id=comment_id,
+            promo_id=id,
+            session=db,
+        )
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail={
+                "status": "error",
+                "message": "Пользователь не авторизован.",
+            },
+        )
